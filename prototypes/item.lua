@@ -4,14 +4,25 @@ local filter = {
     "straight-rail",
     "half-diagonal-rail",
 }
+local static base_rail_list = {
+    "curved-rail-a",
+    "curved-rail-b",
+    "straight-rail",
+    "half-diagonal-rail",
+}
 
 if mods["elevated-rails"] then
-  local elevated_rails = {"rail-ramp"}
-  for _, rail in pairs(filter) do
-    table.insert(elevated_rails, rail)
-    table.insert(elevated_rails, "elevated-" .. rail)
+  table.insert(filter, "rail-ramp")       
+  for _, rail in pairs(base_rail_list) do
+    table.insert(filter, "elevated-" .. rail)
   end
-  filter = elevated_rails
+end
+
+if mods["naked-rails-f2"] then
+    for _, rail in pairs(base_rail_list) do
+        table.insert(filter, "naked-"..rail)     
+        table.insert(filter, "sleepy-"..rail)
+    end    
 end
 
 table.insert(filter, "rail-signal")
