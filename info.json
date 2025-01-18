@@ -1,13 +1,15 @@
 {
-    "name": "RailBow",
-    "title": "RailBow",
-    "version": "1.2.5",
-    "author": "DemonicLaxatives",
-    "factorio_version": "2.0",
-    "dependencies": ["base", "?elevated-rails", "?naked-rails-f2"],
-    "description": "A handy tool that helps you decorate rails.",
-    "homepage": "https://github.com/DemonicLaxatives/RailBow",
-    "package": {
-        "ignore": ["python_scripts/*"]
-    }
+  "name": "RailBow-Refracted",
+  "title": "RailBow Refracted",
+  "version": "1.3.0",
+  "author": "R3CONN3R",
+  "factorio_version": "2.0",
+  "dependencies": [
+    "base",
+    "? elevated-rails",
+    "? naked-rails-f2",
+    "! RailBow"
+  ],
+  "description": "RailBow Refracted provides a configurable selection tool for laying tiles and landfill around rails while removing natural obstacles.",
+  "homepage": "https://mods.factorio.com/mod/RailBow-Refracted"
 }

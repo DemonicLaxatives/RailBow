@@ -1,11 +1,12 @@
 local gui_elements = require("scripts.gui_elements")
-local util = require("__core__.lualib.util")
 
 local lib = {}
 ---@param player LuaPlayer
 ---@param tiles table<integer, string>|nil
 ---@param preset_name string|nil
-function lib.add_preset(player, tiles, preset_name)
+---@param remove_trees boolean
+---@param remove_cliffs boolean
+function lib.add_preset(player, tiles, preset_name, remove_trees, remove_cliffs)
     local railbow_tool = storage.railbow_tools[player.index]
     local presets = railbow_tool.presets
     local n_presets = #presets
@@ -18,10 +19,26 @@ function lib.add_preset(player, tiles, preset_name)
         preset_name = "preset_" .. n_presets + 1
     end
 
+    if remove_trees == nil then
+        if settings.get_player_settings(player)["railbow-default-remove-trees"] ~= nil then
+            ---@diagnostic disable-next-line: cast-local-type
+            remove_trees = settings.get_player_settings(player)["railbow-default-remove-trees"].value
+        end
+    end
+
+    if remove_cliffs == nil then
+        if settings.get_player_settings(player)["railbow-default-remove-cliffs"] ~= nil then
+            ---@diagnostic disable-next-line: cast-local-type
+            remove_cliffs = settings.get_player_settings(player)["railbow-default-remove-cliffs"].value
+        end
+    end
+
     local new_preset = {
         name = preset_name,
         tiles = tiles,
-        mode = "vote"
+        mode = "vote",
+        remove_trees = remove_trees,
+        remove_cliffs = remove_cliffs
     }
     table.insert(storage.railbow_tools[player.index].presets, new_preset)
     
@@ -96,10 +113,19 @@ function lib.change_opened_preset(player, index, toggled)
         railbow_tool.presets[index].tiles = {}
     end
 
+    if not railbow_tool.presets[index].remove_trees then
+        railbow_tool.presets[index].remove_trees = false
+    end
+    if not railbow_tool.presets[index].remove_cliffs then
+        railbow_tool.presets[index].remove_cliffs = false
+    end
+
     local opened_tiles = railbow_tool.presets[index].tiles
     local frame = conflow.tile_selection_frame
 
     frame.header.preset_name.text = railbow_tool.presets[index].name
+    frame.header.remove_trees_checkbox.state = railbow_tool.presets[index].remove_trees
+    frame.header.remove_cliffs_checkbox.state = railbow_tool.presets[index].remove_cliffs
 
     for i, element in pairs(frame.table.children) do
         if string.find(element.name, "tile_selector_") then
@@ -119,6 +145,7 @@ function lib.change_opened_preset(player, index, toggled)
 
 end
 
+--- @param player LuaPlayer
 function lib.delete_preset(player)
     local railbow_tool = storage.railbow_tools[player.index]
     local opened_preset = railbow_tool.opened_preset
@@ -146,6 +173,24 @@ function lib.delete_preset(player)
     gui_elements.populate_preset_list(player.gui.screen.railbow_window.configuration_flow.selection_frame.preset_list)
 end
 
+--- @param player LuaPlayer
+--- @param state boolean
+function lib.toggle_remove_trees(player, state)
+    local railbow_tool = storage.railbow_tools[player.index]
+    local opened_preset = railbow_tool.opened_preset
+    local presets = railbow_tool.presets
+    presets[opened_preset].remove_trees = state
+end
+
+--- @param player LuaPlayer
+--- @param state boolean
+function lib.toggle_remove_cliffs(player, state)
+    local railbow_tool = storage.railbow_tools[player.index]
+    local opened_preset = railbow_tool.opened_preset
+    local presets = railbow_tool.presets
+    presets[opened_preset].remove_cliffs = state
+end
+
 function lib.copy_preset(player)
     local railbow_tool = storage.railbow_tools[player.index]
     local opened_preset = railbow_tool.opened_preset
@@ -156,7 +201,10 @@ function lib.copy_preset(player)
     local new_preset = {
         name = presets[opened_preset].name .. " - copy",
         tiles = util.table.deepcopy(presets[opened_preset].tiles),
-        mode = "vote"
+        mode = "vote",
+        remove_trees_and_rocks = presets[opened_preset].remove_trees,
+        remove_cliffs = presets[opened_preset].remove_cliffs
+
     }
 
     table.insert(presets, new_preset)
@@ -205,7 +253,12 @@ function lib.import_preset(player)
         player.print("[color=red]Error: Invalid import string, not a json.[/color]")
         return
     end
+    log("import_json____________________________________-")
+    log(serpent.block(json))
+    local exchange_string = helpers.encode_string(json)
+    log("import_preset____________________________________-")
     local preset = helpers.json_to_table(json)
+    log(serpent.block(preset))
     if not preset then
         player.print("[color=red]Error: Invalid import string, not a table.[/color]")
         return
@@ -217,11 +270,13 @@ function lib.import_preset(player)
     local tiles = {}
     for i, tile in pairs(preset.tiles) do
         j = tonumber(i)
+        log(serpent.block(j))
         if j then
-            tiles[j] ="invalid" --- tile
+            tiles[j] = tile--"invalid" --- tile
         end
     end
-    lib.add_preset(player, tiles, preset.name)
+    log(serpent.block(tiles))
+    lib.add_preset(player, tiles, preset.name, preset.remove_trees, preset.remove_cliffs)
 end
 
 return lib

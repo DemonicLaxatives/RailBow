@@ -1,14 +1,30 @@
+name: Release
+
+permissions: write-all
+
 on:
   push:
-    tags:
-      - 'v*.*.*'
-        
+    branches:
+      - main
+
 jobs:
-  publish:
+  release:
+    name: release
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
-    - name: Publish Mod
-      uses: danbka33/factorio-mod-portal-publish@master
-      env:
-        FACTORIO_MOD_API_KEY: ${{ secrets.FACTORIO_MOD_API_KEY }}
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - name: Install release dependencies
+        run: |
+          npm install semantic-release@^24 \
+          @semantic-release/git@^10 semantic-release-factorio@^1.5.1 \
+          conventional-changelog-conventionalcommits@^8
+      - name: Run semantic-release
+        run: npx semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FACTORIO_TOKEN: ${{ secrets.FACTORIO_TOKEN }}

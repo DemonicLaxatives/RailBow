@@ -40,5 +40,10 @@ luac.out
 *.i*86
 *.x86_64
 *.hex
+*.sh
 
 *.png~
+
+# VSCode
+**/.vscode/
+*.code-workspace
