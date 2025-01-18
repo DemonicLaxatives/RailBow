@@ -155,26 +155,30 @@ local function do_tile_picking(railbow_calculation)
             table.insert(blueprint_tiles, {name = name, position = pos})
         end
     end
-    if tile_calculation.instant_build then
-        railbow_calculation.mask_calculation.rails[1].surface.set_tiles(blueprint_tiles)
-    else
-        railbow_calculation.inventory.insert({name = "blueprint", count = 1})
-        local blueprint = railbow_calculation.inventory[1]
-        blueprint.blueprint_absolute_snapping = true
-        blueprint.blueprint_snap_to_grid = {x = 1, y = 1}
-        blueprint.blueprint_position_relative_to_grid = { x = 0, y = 0 }
-        blueprint.set_blueprint_tiles(blueprint_tiles)
+	if railbow_calculation.mask_calculation.rails[1] ~= nil then           -- prevent crash when only selecting rail signal
+		if tile_calculation.instant_build then
+			railbow_calculation.mask_calculation.rails[1].surface.set_tiles(blueprint_tiles)
+		else
+				railbow_calculation.inventory.insert({name = "blueprint", count = 1})
+				local blueprint = railbow_calculation.inventory[1]
+				blueprint.blueprint_absolute_snapping = true
+				blueprint.blueprint_snap_to_grid = {x = 1, y = 1}
+				blueprint.blueprint_position_relative_to_grid = { x = 0, y = 0 }
+				blueprint.set_blueprint_tiles(blueprint_tiles)
 
-        blueprint.build_blueprint{
-            surface = railbow_calculation.mask_calculation.rails[1].surface,
-            force = game.players[railbow_calculation.player_index].force,
-            position = railbow_calculation.mask_calculation.p0,
-            force_build = true,
-            by_player = game.players[railbow_calculation.player_index],
-            create_build_effect_smoke = false,
-        }
-        railbow_calculation.inventory.clear()
-    end
+					blueprint.build_blueprint{
+							surface = railbow_calculation.mask_calculation.rails[1].surface,
+							force = game.players[railbow_calculation.player_index].force,
+							position = railbow_calculation.mask_calculation.p0,
+							force_build = true,
+							by_player = game.players[railbow_calculation.player_index],
+							create_build_effect_smoke = false,
+					}
+			railbow_calculation.inventory.clear()
+		end
+	else
+		return
+	end
 
     iteration_state.last_step = i1
     if iteration_state.last_step == iteration_state.n_steps then

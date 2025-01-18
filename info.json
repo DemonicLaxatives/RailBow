@@ -4,7 +4,7 @@
     "version": "1.2.5",
     "author": "DemonicLaxatives",
     "factorio_version": "2.0",
-    "dependencies": ["base", "?elevated-rails"],
+    "dependencies": ["base", "?elevated-rails", "?naked-rails-f2"],
     "description": "A handy tool that helps you decorate rails.",
     "homepage": "https://github.com/DemonicLaxatives/RailBow",
     "package": {
